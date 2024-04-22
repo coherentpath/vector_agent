@@ -1,0 +1,4 @@
+%{
+  "erlexec": {:hex, :erlexec, "2.0.6", "b7443121cfb8add8bc25e3db9c1fd79d14613bbc406984264a0bbc62f121f377", [:rebar3], [], "hexpm", "8c4ebc02449f838648d9854d1c4dc7257e57d4ea2098a7e6386348372085ab21"},
+  "telemetry": {:hex, :telemetry, "1.2.1", "68fdfe8d8f05a8428483a97d7aab2f268aaff24b49e0f599faa091f1d4e7f61c", [:rebar3], [], "hexpm", "dad9ce9d8effc621708f99eac538ef1cbe05d6a874dd741de2e689c47feafed5"},
+}
