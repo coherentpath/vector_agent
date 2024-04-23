@@ -9,6 +9,15 @@ defmodule Vector.Agent do
 
   defstruct [:config, :pid, :os_pid]
 
+  @typedoc """
+  A running Vector agent.
+  """
+  @type t :: %Vector.Agent{
+          config: Vector.Config.t(),
+          pid: pid(),
+          os_pid: non_neg_integer()
+        }
+
   ################################
   # Public API
   ################################
@@ -17,7 +26,7 @@ defmodule Vector.Agent do
   Starts a new Vector agent.
   """
   @spec start_link(Vector.Config.t()) :: GenServer.on_start()
-  def start_link(config) do
+  def start_link(%Vector.Config{} = config) do
     GenServer.start_link(__MODULE__, config)
   end
 
@@ -25,7 +34,17 @@ defmodule Vector.Agent do
   Stops a running Vector agent.
   """
   @spec stop(GenServer.server()) :: :ok
-  def stop(agent), do: GenServer.stop(agent)
+  def stop(agent) do
+    GenServer.stop(agent)
+  end
+
+  @doc """
+  Sends data via stdin to a Vector agent.
+  """
+  @spec send(GenServer.server(), data :: binary()) :: :ok
+  def send(agent, data) do
+    GenServer.call(agent, {:send, data})
+  end
 
   ################################
   # GenServer Callbacks
@@ -42,6 +61,12 @@ defmodule Vector.Agent do
     agent = do_start(config)
     do_log(:info, agent, "vector: Vector is starting.")
     {:noreply, agent}
+  end
+
+  @impl GenServer
+  def handle_call({:send, data}, _from, agent) do
+    :ok = :exec.send(agent.os_pid, data)
+    {:reply, :ok, agent}
   end
 
   @impl GenServer
@@ -69,7 +94,7 @@ defmodule Vector.Agent do
     agent
   end
 
-  def terminate(:normal, agent) do
+  def terminate(message, agent) when message in [:normal, :shutdown] do
     :exec.stop(agent.os_pid)
     do_log(:info, agent, "vector: Vector is stopping.")
     agent
@@ -87,7 +112,7 @@ defmodule Vector.Agent do
   end
 
   defp build_options(config) do
-    [{:stderr, self()}]
+    [:stderr, :stdin, :monitor]
     |> with_option(config, :stdout)
   end
 
@@ -102,21 +127,16 @@ defmodule Vector.Agent do
   end
 
   defp handle_stdout(agent, message) do
-    events = parse_message(message)
+    events = :binary.split(message, "\n", [:global, :trim])
 
     for {consumer, opts} <- agent.config.consumers do
       consumer.handle_events(agent, events, opts)
     end
   end
 
-  defp handle_stderr(agent, message) do
-    logs = parse_message(message)
-    handle_logs(agent, logs)
-  end
+  defp handle_stderr(agent, log) do
+    log = String.replace(log, ["\n\n", "\n"], " ", global: true)
 
-  defp handle_logs(_agent, []), do: :ok
-
-  defp handle_logs(agent, [log | logs]) do
     case log do
       <<_dt::binary-size(27), "  INFO "::binary, msg::binary>> ->
         do_log(:info, agent, msg)
@@ -130,12 +150,6 @@ defmodule Vector.Agent do
       <<_dt::binary-size(27), " DEBUG "::binary, msg::binary>> ->
         do_log(:debug, agent, msg)
     end
-
-    handle_logs(agent, logs)
-  end
-
-  defp parse_message(message) do
-    :binary.split(message, "\n", [:global, :trim])
   end
 
   defp do_log(level, agent, msg) do

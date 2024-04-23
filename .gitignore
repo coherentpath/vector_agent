@@ -30,3 +30,6 @@ vector-*.tar
 
 # Ignore priv directory
 /priv
+
+# Dialyzer generated PLT files
+/dialyzer

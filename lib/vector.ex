@@ -27,6 +27,12 @@ defmodule Vector do
   defdelegate stop(agent), to: Vector.Agent
 
   @doc """
+  Sends data via stdin to a Vector agent.
+  """
+  @spec send(GenServer.server(), data :: binary()) :: :ok
+  defdelegate send(agent, data), to: Vector.Agent
+
+  @doc """
   Returns the Vector binary path.
   """
   @spec binary_path :: String.t()

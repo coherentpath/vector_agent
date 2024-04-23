@@ -8,8 +8,13 @@ defmodule Vector.Consumer do
   """
   @type t :: module()
 
+  @typedoc """
+  A Vector event.
+  """
+  @type event :: binary()
+
   @doc """
   A callback executed to handle Vector events.
   """
-  @callback handle_events(Vector.Agent.t(), [binary()], keyword()) :: :ok
+  @callback handle_events(Vector.Agent.t(), [event()], keyword()) :: :ok
 end
