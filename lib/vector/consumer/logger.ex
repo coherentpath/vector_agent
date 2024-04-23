@@ -1,6 +1,6 @@
 defmodule Vector.Consumer.Logger do
   @moduledoc """
-  A Vector consumer that logs events.
+  A Vector consumer that logs data.
   """
 
   @behaviour Vector.Consumer
@@ -8,10 +8,7 @@ defmodule Vector.Consumer.Logger do
   require Logger
 
   @impl Vector.Consumer
-  def handle_events(_agent, [], _opts), do: :ok
-
-  def handle_events(agent, [event | events], opts) do
-    :ok = Logger.info(event)
-    handle_events(agent, events, opts)
+  def handle_data(agent, data, _opts) do
+    :ok = Logger.info([inspect(agent), ": ", data])
   end
 end

@@ -4,7 +4,7 @@ defmodule Vector.Config do
   """
 
   defstruct [
-    :consumers,
+    :stdout,
     :config,
     :require_healthy,
     :threads,
@@ -25,7 +25,7 @@ defmodule Vector.Config do
   A Vector configuration struct.
   """
   @type t :: %__MODULE__{
-          consumers: [Vector.Consumer.t()] | nil,
+          stdout: {Vector.Consumer.t(), keyword()} | nil,
           config: binary(),
           require_healthy: boolean() | nil,
           threads: integer() | nil,

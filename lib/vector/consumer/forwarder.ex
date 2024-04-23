@@ -1,19 +1,17 @@
 defmodule Vector.Consumer.Forwarder do
   @moduledoc """
-  A Vector consumer that forwards events to another process.
+  A Vector consumer that forwards data to another process.
 
-  The events will be in the format:
+  The data will be in the format:
 
-      {:vector_events, agent, events}
+      {:vector_data, agent, data}
   """
 
   @behaviour Vector.Consumer
 
   @impl Vector.Consumer
-  def handle_events(_agent, [], _opts), do: :ok
-
-  def handle_events(agent, events, pid: pid) do
-    send(pid, {:vector_events, agent, events})
+  def handle_data(agent, data, pid: pid) do
+    send(pid, {:vector_data, agent, data})
     :ok
   end
 end

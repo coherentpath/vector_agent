@@ -41,7 +41,7 @@ file = File.cwd!() <> "/vector.json"
 
 config = %Vector.Config{
   config: file,
-  consumers: [{Vector.Consumer.Logger, []}]
+  stdout: {Vector.Consumer.Logger, []}
 }
 
 {:ok, _} = Vector.start_link(config)
@@ -73,7 +73,7 @@ file = File.cwd!() <> "/vector.json"
 
 config = %Vector.Config{
   config: file,
-  consumers: [{Vector.Consumer.Logger, []}]
+  stdout: {Vector.Consumer.Logger, []}
 }
 
 {:ok, pid} = Vector.start_link(config)

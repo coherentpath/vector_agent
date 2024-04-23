@@ -1,6 +1,6 @@
 defmodule Vector.Consumer do
   @moduledoc """
-  A behaviour to consume events from Vector.
+  A behaviour to consume data from Vector.
   """
 
   @typedoc """
@@ -9,12 +9,16 @@ defmodule Vector.Consumer do
   @type t :: module()
 
   @typedoc """
-  A Vector event.
+  Raw data from Vector.
   """
-  @type event :: binary()
+  @type data :: binary()
 
   @doc """
-  A callback executed to handle Vector events.
+  A callback executed to handle Vector data.
+
+  Data represents one or more possible events based on framing configuration.
+  A consumer module is responsible for splitting data based on the configured
+  framing method.
   """
-  @callback handle_events(Vector.Agent.t(), [event()], keyword()) :: :ok
+  @callback handle_data(Vector.agent(), data(), keyword()) :: :ok
 end

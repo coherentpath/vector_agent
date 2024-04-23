@@ -38,3 +38,5 @@ jobs:
       - name: Run CI
         run: |
           mix ci
+        env:
+          SHELL: /bin/bash

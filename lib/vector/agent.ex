@@ -1,7 +1,5 @@
 defmodule Vector.Agent do
-  @moduledoc """
-  A module for running a Vector agent.
-  """
+  @moduledoc false
 
   use GenServer
 
@@ -22,27 +20,22 @@ defmodule Vector.Agent do
   # Public API
   ################################
 
-  @doc """
-  Starts a new Vector agent.
-  """
+  @doc false
   @spec start_link(Vector.Config.t()) :: GenServer.on_start()
   def start_link(%Vector.Config{} = config) do
     GenServer.start_link(__MODULE__, config)
   end
 
-  @doc """
-  Stops a running Vector agent.
-  """
+  @doc false
   @spec stop(GenServer.server()) :: :ok
   def stop(agent) do
     GenServer.stop(agent)
   end
 
-  @doc """
-  Sends data via stdin to a Vector agent.
-  """
-  @spec send(GenServer.server(), data :: binary()) :: :ok
+  @doc false
+  @spec send(GenServer.server(), data :: iodata()) :: :ok
   def send(agent, data) do
+    data = to_string(data)
     GenServer.call(agent, {:send, data})
   end
 
@@ -70,13 +63,13 @@ defmodule Vector.Agent do
   end
 
   @impl GenServer
-  def handle_info({:stdout, _, message}, agent) do
-    handle_stdout(agent, message)
+  def handle_info({:stdout, _, data}, agent) do
+    handle_stdout(agent, data)
     {:noreply, agent}
   end
 
-  def handle_info({:stderr, _, message}, agent) do
-    handle_stderr(agent, message)
+  def handle_info({:stderr, _, data}, agent) do
+    handle_stderr(agent, data)
     {:noreply, agent}
   end
 
@@ -112,30 +105,27 @@ defmodule Vector.Agent do
   end
 
   defp build_options(config) do
-    [:stderr, :stdin, :monitor]
+    [:stderr, :stdin]
     |> with_option(config, :stdout)
   end
 
   defp with_option(options, config, :stdout) do
-    case config.consumers do
-      [_ | _] ->
-        options ++ [{:stdout, self()}]
+    case config.stdout do
+      {_, _} ->
+        options ++ [:stdout]
 
       _ ->
         options
     end
   end
 
-  defp handle_stdout(agent, message) do
-    events = :binary.split(message, "\n", [:global, :trim])
-
-    for {consumer, opts} <- agent.config.consumers do
-      consumer.handle_events(agent, events, opts)
-    end
+  defp handle_stdout(agent, data) do
+    {consumer, opts} = agent.config.stdout
+    consumer.handle_data(agent, data, opts)
   end
 
-  defp handle_stderr(agent, log) do
-    log = String.replace(log, ["\n\n", "\n"], " ", global: true)
+  defp handle_stderr(agent, data) do
+    log = String.replace(data, ["\n\n", "\n"], " ", global: true)
 
     case log do
       <<_dt::binary-size(27), "  INFO "::binary, msg::binary>> ->

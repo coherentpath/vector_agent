@@ -3,6 +3,15 @@ defmodule Vector do
   A module for managing an embedded [Vector](https://vector.dev/) agent.
   """
 
+  @typedoc """
+  A running Vector agent.
+  """
+  @type agent :: %Vector.Agent{
+          config: Vector.Config.t(),
+          pid: pid(),
+          os_pid: non_neg_integer()
+        }
+
   ################################
   # Public API
   ################################
@@ -28,8 +37,10 @@ defmodule Vector do
 
   @doc """
   Sends data via stdin to a Vector agent.
+
+  Individual events must be split by your configured framing method.
   """
-  @spec send(GenServer.server(), data :: binary()) :: :ok
+  @spec send(GenServer.server(), data :: iodata()) :: :ok
   defdelegate send(agent, data), to: Vector.Agent
 
   @doc """

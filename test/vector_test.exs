@@ -26,12 +26,12 @@ defmodule VectorTest do
 
     config = %Vector.Config{
       config: write_config(config),
-      consumers: [{Forwarder, [pid: self()]}]
+      stdout: {Forwarder, [pid: self()]}
     }
 
     assert {:ok, _} = Vector.start_link(config)
-    assert_receive {:vector_events, _agent, events}, 1_000
-    assert [_] = events
+    assert_receive {:vector_data, _agent, data}, 1_000
+    assert is_binary(data)
   end
 
   test "will exit if passed bad config" do
@@ -65,13 +65,13 @@ defmodule VectorTest do
 
     config = %Vector.Config{
       config: write_config(config),
-      consumers: [{Forwarder, [pid: self()]}]
+      stdout: {Forwarder, [pid: self()]}
     }
 
     assert {:ok, pid} = Vector.start_link(config)
-    assert :ok = Vector.send(pid, "foo\n")
-    assert_receive {:vector_events, _agent, events}, 1_000
-    assert ["foo"] = events
+    assert :ok = Vector.send(pid, ["foo", "\n"])
+    assert_receive {:vector_data, _agent, data}, 1_000
+    assert data == "foo\n"
   end
 
   defp write_config(config) do
