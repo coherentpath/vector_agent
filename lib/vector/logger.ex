@@ -14,7 +14,7 @@ defmodule Vector.Logger do
   end
 
   @doc false
-  @spec log_stderr(Vector.agenet(), binary()) :: :ok
+  @spec log_stderr(Vector.agent(), binary()) :: :ok
   def log_stderr(agent, raw) do
     logs = parse_stderr(raw)
     Enum.each(logs, fn {level, log} -> log(agent, level, log) end)
