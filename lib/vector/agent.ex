@@ -3,7 +3,7 @@ defmodule Vector.Agent do
 
   use GenServer
 
-  require Logger
+  alias Vector.Logger
 
   defstruct [:config, :pid, :os_pid]
 
@@ -52,7 +52,7 @@ defmodule Vector.Agent do
   @impl GenServer
   def handle_continue(:start, config) do
     agent = do_start(config)
-    do_log(:info, agent, "vector: Vector is starting.")
+    :ok = Logger.log(agent, :info, "vector: Vector is starting.")
     {:noreply, agent}
   end
 
@@ -69,7 +69,7 @@ defmodule Vector.Agent do
   end
 
   def handle_info({:stderr, _, data}, agent) do
-    handle_stderr(agent, data)
+    :ok = Logger.log_stderr(agent, data)
     {:noreply, agent}
   end
 
@@ -83,13 +83,13 @@ defmodule Vector.Agent do
 
   @impl GenServer
   def terminate({:vector_error, {:exit_status, status}}, agent) do
-    do_log(:error, agent, "vector: Vector is exiting with error status #{status}.")
+    :ok = Logger.log(agent, :error, "vector: Vector is exiting with error status #{status}.")
     agent
   end
 
   def terminate(message, agent) when message in [:normal, :shutdown] do
-    :exec.stop(agent.os_pid)
-    do_log(:info, agent, "vector: Vector is stopping.")
+    :ok = :exec.stop(agent.os_pid)
+    :ok = Logger.log(agent, :info, "vector: Vector is stopping.")
     agent
   end
 
@@ -122,28 +122,6 @@ defmodule Vector.Agent do
   defp handle_stdout(agent, data) do
     {consumer, opts} = agent.config.stdout
     consumer.handle_data(agent, data, opts)
-  end
-
-  defp handle_stderr(agent, data) do
-    log = String.replace(data, ["\n\n", "\n"], " ", global: true)
-
-    case log do
-      <<_dt::binary-size(27), "  INFO "::binary, msg::binary>> ->
-        do_log(:info, agent, msg)
-
-      <<_dt::binary-size(27), "  WARN "::binary, msg::binary>> ->
-        do_log(:warning, agent, msg)
-
-      <<_dt::binary-size(27), " ERROR "::binary, msg::binary>> ->
-        do_log(:error, agent, msg)
-
-      <<_dt::binary-size(27), " DEBUG "::binary, msg::binary>> ->
-        do_log(:debug, agent, msg)
-    end
-  end
-
-  defp do_log(level, agent, msg) do
-    Logger.log(level, ["[", inspect(agent), "]", " ", msg])
   end
 
   defimpl Inspect do

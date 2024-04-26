@@ -18,7 +18,8 @@ defmodule Vector.Config do
     :allocation_tracing_reporting_interval_ms,
     :openssl_no_probe,
     :allow_empty_config,
-    :strict_env_vars
+    :strict_env_vars,
+    :log_level
   ]
 
   @typedoc """
@@ -39,7 +40,8 @@ defmodule Vector.Config do
           allocation_tracing_reporting_interval_ms: integer() | nil,
           openssl_no_probe: boolean() | nil,
           allow_empty_config: boolean() | nil,
-          strict_env_vars: boolean() | nil
+          strict_env_vars: boolean() | nil,
+          log_level: :trace | :debug | :info | :warn | :error | :none | nil
         }
 
   ################################
@@ -102,6 +104,17 @@ defmodule Vector.Config do
 
   defp to_args({:require_healthy, true}, args) do
     ["--require-healthy", " ", "true", " " | args]
+  end
+
+  defp to_args({:log_level, level}, args) when is_atom(level) do
+    case level do
+      :debug -> ["-v", " " | args]
+      :trace -> ["-vv", " " | args]
+      :warn -> ["-q", " " | args]
+      :error -> ["-qq", " " | args]
+      :none -> ["-qqq", " " | args]
+      _ -> args
+    end
   end
 
   defp to_args(_, args), do: args
