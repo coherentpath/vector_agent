@@ -1,10 +1,12 @@
 defmodule Vector.MixProject do
   use Mix.Project
 
+  @version "0.1.5"
+
   def project do
     [
       app: :vector_agent,
-      version: "0.1.2",
+      version: @version,
       elixir: "~> 1.14",
       elixirc_paths: elixirc_paths(Mix.env()),
       dialyzer: dialyzer(),

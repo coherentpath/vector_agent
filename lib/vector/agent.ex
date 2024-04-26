@@ -7,15 +7,6 @@ defmodule Vector.Agent do
 
   defstruct [:config, :pid, :os_pid]
 
-  @typedoc """
-  A running Vector agent.
-  """
-  @type t :: %Vector.Agent{
-          config: Vector.Config.t(),
-          pid: pid(),
-          os_pid: non_neg_integer()
-        }
-
   ################################
   # Public API
   ################################

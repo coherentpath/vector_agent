@@ -7,7 +7,7 @@ A library to embed [Vector](https://vector.dev/) agents inside Elixir applicatio
 ```elixir
 def deps do
   [
-    {:vector_agent, "~> 0.1.0"}
+    {:vector_agent, "~> *.*.*"}
   ]
 end
 ```
