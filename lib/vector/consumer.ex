@@ -1,6 +1,6 @@
 defmodule Vector.Consumer do
   @moduledoc """
-  A behaviour to consume data from Vector.
+  A behaviour to consume stdout and stderr from Vector.
   """
 
   @typedoc """
@@ -9,16 +9,21 @@ defmodule Vector.Consumer do
   @type t :: module()
 
   @typedoc """
+  The possible types of data.
+  """
+  @type type :: :stdout | :stderr
+
+  @typedoc """
   Raw data from Vector.
+
+  This represents one or more possible events/logs based on framing configuration.
+  A consumer module is responsible for splitting it based on the configured
+  framing method.
   """
   @type data :: binary()
 
   @doc """
   A callback executed to handle Vector data.
-
-  Data represents one or more possible events based on framing configuration.
-  A consumer module is responsible for splitting data based on the configured
-  framing method.
   """
-  @callback handle_data(Vector.agent(), data(), keyword()) :: :ok
+  @callback handle_data(Vector.agent(), type(), data(), keyword()) :: :ok
 end

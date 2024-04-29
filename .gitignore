@@ -33,3 +33,6 @@ vector-*.tar
 
 # Dialyzer generated PLT files
 /dialyzer
+
+# Ignore local examples
+/examples
