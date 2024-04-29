@@ -3,7 +3,7 @@ defmodule Vector.Agent do
 
   use GenServer
 
-  alias Vector.Logger
+  alias Vector.Consumer.Logger
 
   defstruct [:config, :pid, :os_pid]
 
@@ -54,18 +54,18 @@ defmodule Vector.Agent do
   end
 
   @impl GenServer
-  def handle_info({:stdout, _, data}, agent) do
-    handle_stdout(agent, data)
+  def handle_info({:stdout, _, stdout}, agent) do
+    handle_data(agent, :stdout, stdout)
     {:noreply, agent}
   end
 
-  def handle_info({:stderr, _, data}, agent) do
-    :ok = Logger.log_stderr(agent, data)
+  def handle_info({:stderr, _, stderr}, agent) do
+    handle_data(agent, :stderr, stderr)
     {:noreply, agent}
   end
 
   def handle_info({:EXIT, _, {:exit_status, _} = status}, agent) do
-    {:stop, {:vector_error, status}, agent}
+    {:stop, {[:vector, :error], status}, agent}
   end
 
   def handle_info({:EXIT, _, :normal}, agent) do
@@ -73,7 +73,7 @@ defmodule Vector.Agent do
   end
 
   @impl GenServer
-  def terminate({:vector_error, {:exit_status, status}}, agent) do
+  def terminate({[:vector, :error], {:exit_status, status}}, agent) do
     :ok = Logger.log(agent, :error, "vector: Vector is exiting with error status #{status}.")
     agent
   end
@@ -96,23 +96,21 @@ defmodule Vector.Agent do
   end
 
   defp build_options(config) do
-    [:stderr, :stdin]
+    [:stdin]
     |> with_option(config, :stdout)
+    |> with_option(config, :stderr)
   end
 
-  defp with_option(options, config, :stdout) do
-    case config.stdout do
-      {_, _} ->
-        options ++ [:stdout]
-
-      _ ->
-        options
+  defp with_option(options, config, option) when option in [:stderr, :stdout] do
+    case Map.get(config, option) do
+      {_, _} -> options ++ [option]
+      _ -> options
     end
   end
 
-  defp handle_stdout(agent, data) do
-    {consumer, opts} = agent.config.stdout
-    consumer.handle_data(agent, data, opts)
+  defp handle_data(agent, type, data) do
+    {consumer, opts} = Map.get(agent.config, type)
+    consumer.handle_data(agent, type, data, opts)
   end
 
   defimpl Inspect do

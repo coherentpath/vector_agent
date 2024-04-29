@@ -12,6 +12,13 @@ def deps do
 end
 ```
 
+Please note that `curl` and `bash` must both be available during compilation in
+order to download the vector agent binary.
+
+Additionally - `:vector_agent` makes use of `:erlexec` to control vector agents.
+`:erlexec` expects a `SHELL` environment variable to be available - otherwise
+startup errors will occur. If this value is not already set - its common to set it with the value `/bin/sh`.
+
 ## Examples
 
 Simple logging of demo log events from a Vector agent.

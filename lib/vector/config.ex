@@ -19,7 +19,8 @@ defmodule Vector.Config do
     :openssl_no_probe,
     :allow_empty_config,
     :strict_env_vars,
-    :log_level
+    :log_level,
+    stderr: {Vector.Consumer.Logger, []}
   ]
 
   @typedoc """
@@ -27,6 +28,7 @@ defmodule Vector.Config do
   """
   @type t :: %__MODULE__{
           stdout: {Vector.Consumer.t(), keyword()} | nil,
+          stderr: {Vector.Consumer.t(), keyword()} | nil,
           config: binary(),
           require_healthy: boolean() | nil,
           threads: integer() | nil,

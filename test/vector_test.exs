@@ -25,24 +25,24 @@ defmodule VectorTest do
     }
 
     config = %Vector.Config{
-      config: write_config(config),
+      config: to_json_file!(config),
       stdout: {Forwarder, [pid: self()]}
     }
 
     assert {:ok, _} = Vector.start_link(config)
-    assert_receive {:vector_data, _agent, data}, 1_000
-    assert is_binary(data)
+    assert_receive {[:vector, :stdout], _agent, stdout}, 5_000
+    assert is_binary(stdout)
   end
 
   test "will exit if passed bad config" do
     config = %Vector.Config{
-      config: write_config(%{})
+      config: to_json_file!(%{})
     }
 
     Process.flag(:trap_exit, true)
 
     assert {:ok, pid} = Vector.start_link(config)
-    assert_receive {:EXIT, ^pid, {:vector_error, {:exit_status, 19_968}}}, 1_000
+    assert_receive {:EXIT, ^pid, {[:vector, :error], {:exit_status, 19_968}}}, 5_000
   end
 
   test "will recieve data via stdin" do
@@ -64,21 +64,22 @@ defmodule VectorTest do
     }
 
     config = %Vector.Config{
-      config: write_config(config),
+      config: to_json_file!(config),
       stdout: {Forwarder, [pid: self()]}
     }
 
     assert {:ok, pid} = Vector.start_link(config)
     assert :ok = Vector.send(pid, ["foo", "\n"])
-    assert_receive {:vector_data, _agent, data}, 1_000
-    assert data == "foo\n"
+    assert_receive {[:vector, :stdout], _agent, stdout}, 5_000
+    assert stdout == "foo\n"
   end
 
-  defp write_config(config) do
+  defp to_json_file!(config) do
     file = Enum.random(1..100_000)
     file = System.tmp_dir!() <> "/#{file}.json"
     config = Jason.encode!(config)
     :ok = File.write!(file, config)
+    on_exit(fn -> File.rm!(file) end)
     file
   end
 end

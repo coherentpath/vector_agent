@@ -1,7 +1,7 @@
-defmodule Vector.LoggerTest do
+defmodule Vector.Consumer.LoggerTest do
   use ExUnit.Case
 
-  alias Vector.Logger
+  alias Vector.Consumer.Logger
 
   describe "parse_stderr/2" do
     test "will correctly parse multiple logs" do
