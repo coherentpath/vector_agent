@@ -97,8 +97,9 @@ defmodule Vector.Agent do
     options = build_options(config)
     command = Vector.start_command(config)
     {:ok, pid, os_pid} = :exec.run_link(command, options)
+    agent = %__MODULE__{config: config, pid: pid, os_pid: os_pid}
     :ok = Logger.log(agent, :info, "vector: Vector is starting.")
-    %__MODULE__{config: config, pid: pid, os_pid: os_pid}
+    agent
   end
 
   defp build_options(config) do
