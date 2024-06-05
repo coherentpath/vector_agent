@@ -37,7 +37,14 @@ defmodule Vector.Agent do
   @impl GenServer
   def init(config) do
     Process.flag(:trap_exit, true)
-    {:ok, config, {:continue, :start}}
+
+    if config.start_async? do
+      {:ok, config, {:continue, :start}}
+    else
+      agent = do_start(config)
+      :ok = Logger.log(agent, :info, "vector: Vector is starting.")
+      {:ok, agent}
+    end
   end
 
   @impl GenServer
