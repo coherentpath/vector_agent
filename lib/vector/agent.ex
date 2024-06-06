@@ -37,13 +37,18 @@ defmodule Vector.Agent do
   @impl GenServer
   def init(config) do
     Process.flag(:trap_exit, true)
-    {:ok, config, {:continue, :start}}
+
+    if config.start_async do
+      {:ok, config, {:continue, :start}}
+    else
+      agent = do_start(config)
+      {:ok, agent}
+    end
   end
 
   @impl GenServer
   def handle_continue(:start, config) do
     agent = do_start(config)
-    :ok = Logger.log(agent, :info, "vector: Vector is starting.")
     {:noreply, agent}
   end
 
@@ -92,7 +97,9 @@ defmodule Vector.Agent do
     options = build_options(config)
     command = Vector.start_command(config)
     {:ok, pid, os_pid} = :exec.run_link(command, options)
-    %__MODULE__{config: config, pid: pid, os_pid: os_pid}
+    agent = %__MODULE__{config: config, pid: pid, os_pid: os_pid}
+    :ok = Logger.log(agent, :info, "vector: Vector is starting.")
+    agent
   end
 
   defp build_options(config) do
