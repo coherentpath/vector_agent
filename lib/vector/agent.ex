@@ -38,7 +38,7 @@ defmodule Vector.Agent do
   def init(config) do
     Process.flag(:trap_exit, true)
 
-    if config.start_async? do
+    if config.start_async do
       {:ok, config, {:continue, :start}}
     else
       agent = do_start(config)

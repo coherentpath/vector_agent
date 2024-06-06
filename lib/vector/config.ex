@@ -20,7 +20,7 @@ defmodule Vector.Config do
     :allow_empty_config,
     :strict_env_vars,
     :log_level,
-    start_async?: true,
+    start_async: true,
     stderr: {Vector.Consumer.Logger, []}
   ]
 
@@ -45,7 +45,7 @@ defmodule Vector.Config do
           allow_empty_config: boolean() | nil,
           strict_env_vars: boolean() | nil,
           log_level: :trace | :debug | :info | :warn | :error | :none | nil,
-          start_async?: boolean()
+          start_async: boolean()
         }
 
   ################################
