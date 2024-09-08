@@ -77,6 +77,10 @@ defmodule Vector.Agent do
     {:stop, :normal, agent}
   end
 
+  def handle_info(:shutdown, agent) do
+    {:stop, :normal, agent}
+  end
+
   @impl GenServer
   def terminate({[:vector, :error], {:exit_status, status}}, agent) do
     :ok = Logger.log(agent, :error, "vector: Vector is exiting with error status #{status}.")
@@ -85,6 +89,7 @@ defmodule Vector.Agent do
 
   def terminate(message, agent) when message in [:normal, :shutdown] do
     :ok = :exec.stop(agent.os_pid)
+    do_confirm_exit(agent.os_pid)
     :ok = Logger.log(agent, :info, "vector: Vector is stopping.")
     agent
   end
@@ -99,6 +104,7 @@ defmodule Vector.Agent do
     {:ok, pid, os_pid} = :exec.run_link(command, options)
     agent = %__MODULE__{config: config, pid: pid, os_pid: os_pid}
     :ok = Logger.log(agent, :info, "vector: Vector is starting.")
+    maybe_schedule_shutdown(agent)
     agent
   end
 
@@ -118,6 +124,30 @@ defmodule Vector.Agent do
   defp handle_data(agent, type, data) do
     {consumer, opts} = Map.get(agent.config, type)
     consumer.handle_data(agent, type, data, opts)
+  end
+
+  defp maybe_schedule_shutdown(agent) do
+    if is_integer(agent.config.shutdown_ms) do
+      :ok =
+        Logger.log(
+          agent,
+          :info,
+          "vector: Vector shutdown scheduled in #{agent.config.shutdown_ms}ms."
+        )
+
+      Process.send_after(self(), :shutdown, agent.config.shutdown_ms)
+    end
+  end
+
+  defp do_confirm_exit(os_pid) do
+    case System.cmd("ps", ["-p #{os_pid}"]) do
+      {_, 0} ->
+        :timer.sleep(250)
+        do_confirm_exit(os_pid)
+
+      {_, 1} ->
+        :ok
+    end
   end
 
   defimpl Inspect do
