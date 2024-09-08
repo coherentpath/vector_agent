@@ -74,6 +74,38 @@ defmodule VectorTest do
     assert stdout == "foo\n"
   end
 
+  test "will shutdown based on shutdown_ms" do
+    config = %{
+      sources: %{
+        test_source: %{
+          type: "demo_logs",
+          format: "apache_common"
+        }
+      },
+      sinks: %{
+        test_sink: %{
+          type: "console",
+          inputs: ["test_source"],
+          encoding: %{
+            codec: "text"
+          }
+        }
+      }
+    }
+
+    config = %Vector.Config{
+      config: to_json_file!(config),
+      shutdown_ms: 250
+    }
+
+    assert {:ok, pid} = Vector.start_link(config)
+    assert Process.alive?(pid)
+
+    :timer.sleep(1500)
+
+    refute Process.alive?(pid)
+  end
+
   defp to_json_file!(config) do
     file = Enum.random(1..100_000)
     file = System.tmp_dir!() <> "/#{file}.json"
