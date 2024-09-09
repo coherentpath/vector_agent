@@ -91,6 +91,7 @@ defmodule Vector.Agent do
     :ok = Logger.log(agent, :info, "vector: Vector is stopping.")
     :ok = :exec.stop(agent.os_pid)
     do_confirm_exit(agent.os_pid)
+    do_flush_messages(agent)
     :ok = Logger.log(agent, :info, "vector: Vector has stopped.")
     agent
   end
@@ -148,6 +149,14 @@ defmodule Vector.Agent do
 
       {_, 1} ->
         :ok
+    end
+  end
+
+  defp do_flush_messages(agent) do
+    receive do
+      msg -> handle_info(msg, agent)
+    after
+      0 -> :ok
     end
   end
 
