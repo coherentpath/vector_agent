@@ -154,7 +154,9 @@ defmodule Vector.Agent do
 
   defp do_flush_messages(agent) do
     receive do
-      msg -> handle_info(msg, agent)
+      msg ->
+        handle_info(msg, agent)
+        do_flush_messages(agent)
     after
       0 -> :ok
     end
