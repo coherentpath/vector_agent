@@ -140,9 +140,9 @@ defmodule Vector.Agent do
   end
 
   defp do_confirm_exit(os_pid) do
-    case System.cmd("ps", ["-p #{os_pid}"]) do
+    case System.cmd("kill", ["-0", to_string(os_pid)], stderr_to_stdout: true) do
       {_, 0} ->
-        :timer.sleep(250)
+        :timer.sleep(100)
         do_confirm_exit(os_pid)
 
       {_, 1} ->
