@@ -63,7 +63,8 @@ defmodule Vector.Installer do
     install = String.replace(@install, "{path}", path)
     install = String.to_charlist(install)
     # credo:disable-for-next-line
-    :os.cmd(install)
+    debug_output = :os.cmd(install)
+    IO.puts(debug_output)
     validate!()
   end
 
