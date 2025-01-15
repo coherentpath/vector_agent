@@ -63,18 +63,18 @@ defmodule Vector.Installer do
     install = String.replace(@install, "{path}", path)
     install = String.to_charlist(install)
     # credo:disable-for-next-line
-    debug_output = :os.cmd(install)
-    IO.puts(debug_output)
-    validate!()
+    debug_info = :os.cmd(install)
+    validate!(debug_info)
   end
 
-  defp validate! do
+  defp validate!(debug_info) do
     case Vector.version() do
       {:ok, version} ->
         Logger.debug("Vector #{version} installed.")
         :ok
 
       :error ->
+        IO.puts(debug_info)
         raise RuntimeError, "Vector binary failed to install."
     end
   end
