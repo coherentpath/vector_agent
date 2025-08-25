@@ -89,7 +89,7 @@ defmodule Vector.Agent do
 
   def terminate(message, agent) when message in [:normal, :shutdown] do
     :ok = Logger.log(agent, :info, "vector: Vector is stopping.")
-    :ok = :exec.stop(agent.os_pid)
+    :exec.stop(agent.os_pid)
     do_confirm_exit(agent)
     do_flush_messages(agent)
     :ok = Logger.log(agent, :info, "vector: Vector has stopped.")
