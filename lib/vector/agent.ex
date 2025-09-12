@@ -149,6 +149,15 @@ defmodule Vector.Agent do
 
       {_, 1} ->
         :ok
+
+      :enoent ->
+        Logger.log(
+          agent,
+          :warn,
+          "vector: Vector exit not confirmed. `kill` command not found."
+        )
+
+        :ok
     end
   end
 
