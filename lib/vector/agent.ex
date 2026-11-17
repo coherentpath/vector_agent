@@ -111,7 +111,7 @@ defmodule Vector.Agent do
   end
 
   defp build_options(config) do
-    [:stdin]
+    [:stdin, {:group, 0}, :kill_group]
     |> with_option(config, :stdout)
     |> with_option(config, :stderr)
   end
