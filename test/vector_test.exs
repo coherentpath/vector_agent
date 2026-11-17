@@ -106,6 +106,33 @@ defmodule VectorTest do
     refute Process.alive?(pid)
   end
 
+  test "will not leave a vector process running after stopping" do
+    config = %{
+      sources: %{test_source: %{type: "demo_logs", format: "apache_common"}},
+      sinks: %{
+        test_sink: %{type: "console", inputs: ["test_source"], encoding: %{codec: "text"}}
+      }
+    }
+
+    config = %Vector.Config{
+      config: to_json_file!(config),
+      stdout: {Forwarder, [pid: self()]}
+    }
+
+    assert {:ok, pid} = Vector.start_link(config)
+    assert_receive {[:vector, :stdout], _agent, _stdout}, 5_000
+    assert vector_pids(config) != []
+
+    :ok = Vector.stop(pid)
+
+    assert vector_pids(config) == []
+  end
+
+  defp vector_pids(%Vector.Config{config: file}) do
+    {out, _} = System.cmd("pgrep", ["-f", "vector.*--config #{file}"])
+    String.split(out, "\n", trim: true)
+  end
+
   defp to_json_file!(config) do
     file = Enum.random(1..100_000)
     file = System.tmp_dir!() <> "/#{file}.json"

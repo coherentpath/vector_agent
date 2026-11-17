@@ -61,11 +61,16 @@ defmodule Vector do
 
   @doc """
   Returns the Vector start command.
+
+  The command is run through `sh -c`. It is prefixed with `exec` so the shell
+  is replaced by Vector. Otherwise (e.g. with dash) the shell stays alive as
+  Vector's parent, the tracked OS pid is the shell's, and stopping the agent
+  signals only the shell, leaving Vector orphaned and still running.
   """
   @spec start_command(Vector.Config.t()) :: binary()
   def start_command(config) do
     args = Vector.Config.to_args(config)
-    to_string([binary_path(), " ", args])
+    to_string(["exec ", binary_path(), " ", args])
   end
 
   @doc """
